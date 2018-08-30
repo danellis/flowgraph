@@ -1,0 +1,60 @@
+svg {
+    width: 100%;
+    height: 800px;
+}
+
+.node-bg {
+    fill: #aaa;
+}
+
+.node.source .node-header {
+    fill: #4a80d6;
+    stroke: none;
+}
+
+.node.inventory .node-header {
+    fill: #56b45a;
+    stroke: none;
+}
+
+.node.filter .node-header {
+    fill: #b3b439;
+    stroke: none;
+}
+
+.node-outline {
+    stroke: #333;
+    fill: none;
+    stroke-width: 1px;
+}
+
+.node-title {
+    font-family: sans-serif;
+    fill: #ddd;
+}
+
+.node-outlet-pid {
+    fill: #4ad684;
+    stroke: #333;
+}
+
+.node-inlet {
+    fill: #d8e24a;
+    stroke: #333;
+}
+
+.node-outlet {
+    fill: #d8e24a;
+    stroke: #333;
+}
+
+.property-text {
+    font-family: sans-serif;
+    fill: #333;
+}
+
+.connector {
+    stroke: #555;
+    fill: none;
+    stroke-width: 2px;
+}
