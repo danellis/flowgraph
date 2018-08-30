@@ -1,10 +1,13 @@
+body {
+    background-color: #333;
+}
 svg {
     width: 100%;
     height: 800px;
 }
 
 .node-bg {
-    fill: #aaa;
+    fill: #202020;
 }
 
 .node.source .node-header {
@@ -13,12 +16,12 @@ svg {
 }
 
 .node.inventory .node-header {
-    fill: #56b45a;
+    fill: #4d994d;
     stroke: none;
 }
 
 .node.filter .node-header {
-    fill: #b3b439;
+    fill: #868729;
     stroke: none;
 }
 
@@ -50,11 +53,12 @@ svg {
 
 .property-text {
     font-family: sans-serif;
-    fill: #333;
+    fill: #fff;
+    font-size: 12px;
 }
 
-.connector {
-    stroke: #555;
+.node-connector {
+    stroke: #aaa;
     fill: none;
     stroke-width: 2px;
 }
