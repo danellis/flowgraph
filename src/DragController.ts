@@ -70,6 +70,11 @@ export class DragController {
             // Unhighlight the inlet, since we'll no longer be dragging when we mouseout
             this.inlet.highlighted = false;
 
+            // If the connection was connected to another inlet, clear that one
+            if (this.connection.end) {
+                this.connection.end.incoming = null;
+            }
+
             // Set the end point of the connection we're dragging to this inlet
             this.connection.end = this.inlet;
 
@@ -77,7 +82,10 @@ export class DragController {
             this.connection.attached = true;
         } else {
             // Button released somewhere else
-            this.connection.end.incoming = null;
+            if (this.connection.end) {
+                this.connection.end.incoming = null;
+            }
+
             this.connection.start.node.removeConnection(this.connection);
         }
 
