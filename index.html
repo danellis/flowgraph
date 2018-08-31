@@ -25,7 +25,16 @@
           :class="{'node-inlet': true, 'highlighted': prop.highlighted}"
           r="5" :cx="prop.inletX" :cy="prop.y"
         ></circle>
-        <circle v-if="prop.hasOutlet" class="node-outlet" r="5" :cx="prop.outletX" :cy="prop.y"></circle>
+
+        <circle
+          v-if="prop.hasOutlet"
+          @mousedown.prevent="workspace.dragController.onMouseDownOutlet($event, prop)"
+          class="node-outlet"
+          r="5"
+          :cx="prop.outletX"
+          :cy="prop.y"
+        ></circle>
+
         <text class="property-text" :x="prop.textX" :y="prop.textY" :text-anchor="prop.anchor">{{prop.text}}</text>
       </g>
     </g>
