@@ -38,8 +38,8 @@ export class DragController {
     }
 
     onMouseMove(event: MouseEvent): void {
-        this.connection.x = event.x;
-        this.connection.y = event.y;
+        this.connection.x = event.x - 8;
+        this.connection.y = event.y - 8;
     }
 
     onMouseEnterInlet(prop: Property): void {
