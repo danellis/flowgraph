@@ -6,18 +6,25 @@
   </head>
   <body>
   <svg id="workspace" width="500" height="500">
-    <g v-for="node in nodes">
+    <g v-for="node in workspace.nodes">
       <g v-for="start in node.properties">
-        <path v-for="end in start.outgoing" class="node-connector" :d="start.connectionPath(end)"></path>
+        <path v-for="connection in start.outgoing" class="node-connector" :d="connection.path"></path>
       </g>
     </g>
-    <g v-for="node in nodes" :class="'node ' + node.cls">
+    <g v-for="node in workspace.nodes" :class="'node ' + node.cls">
       <rect class="node-bg" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
-      <path class="node-header" :d="headerPath(node)"></path>
-      <text class="node-title" :x="node.x + 15" :y="node.y + 20" :clip-path="headerClip(node)">{{node.title}}</text>
+      <path class="node-header" :d="node.headerPath"></path>
+      <text class="node-title" :x="node.x + 15" :y="node.y + 20" :clip-path="node.headerClip">{{node.title}}</text>
       <rect class="node-outline" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
       <g v-for="prop in node.properties">
-        <circle v-if="prop.hasInlet" class="node-inlet" r="5" :cx="prop.inletX" :cy="prop.y"></circle>
+        <circle
+          v-if="prop.hasInlet"
+          @mousedown.prevent="workspace.dragController.onMouseDownInlet($event, prop)"
+          @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
+          @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
+          :class="{'node-inlet': true, 'highlighted': prop.highlighted}"
+          r="5" :cx="prop.inletX" :cy="prop.y"
+        ></circle>
         <circle v-if="prop.hasOutlet" class="node-outlet" r="5" :cx="prop.outletX" :cy="prop.y"></circle>
         <text class="property-text" :x="prop.textX" :y="prop.textY" :text-anchor="prop.anchor">{{prop.text}}</text>
       </g>

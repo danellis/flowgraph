@@ -46,6 +46,10 @@ svg {
     stroke: #333;
 }
 
+.node-inlet.highlighted {
+    stroke: #fff;
+}
+
 .node-outlet {
     fill: #d8e24a;
     stroke: #333;

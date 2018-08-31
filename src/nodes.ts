@@ -1,6 +1,80 @@
 import Vue from 'vue';
 
+enum DragState {
+    IDLE, SENSING, INLET_DRAGGING, OUTLET_DRAGGING
+}
+
+class Workspace {
+    dragController: DragController = new DragController();
+    nodes: Array<Node> = [];
+
+    addNode(cls: string, title: string, x: number, y: number, width: number, height: number): Node {
+        let node = new Node(this, cls, title, x, y, width, height);
+        this.nodes.push(node);
+        return node;
+    }
+}
+
+//     dragOffsetX = event.x - nodeX;
+//     dragOffsetY = event.y - nodeY;
+//     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
+
+class DragController {
+    dragState: DragState = DragState.IDLE;
+    connection: Connection = null;
+    inlet: Property = null;
+
+
+    onMouseDownInlet($event, prop: Property): void {
+        this.dragState = DragState.INLET_DRAGGING;
+        this.connection = prop.incoming;
+        this.connection.attached = false;
+        this.connection.x = $event.x;
+        this.connection.y = $event.y;
+        document.addEventListener('mousemove', (event) => this.onMouseMove(event));
+        document.addEventListener('mouseup', (event) => this.onMouseUp(event));
+    }
+
+    onMouseMove($event): void {
+        this.connection.x = $event.x;
+        this.connection.y = $event.y;
+    }
+
+    onMouseEnterInlet(prop: Property): void {
+        if (this.dragState == DragState.INLET_DRAGGING) {
+            prop.highlighted = true;
+            this.inlet = prop;
+        }
+    }
+
+    onMouseLeaveInlet(prop: Property): void {
+        if (this.dragState == DragState.INLET_DRAGGING) {
+            prop.highlighted = false;
+            this.inlet = null;
+        }
+    }
+
+    onMouseUp(event): void {
+        this.connection.end.incoming = null;
+
+        if (this.inlet) {
+            if (this.inlet.incoming) {
+                this.connection.start.node.removeConnection(this.inlet.incoming)
+            }
+
+            this.inlet.incoming = this.connection;
+            this.connection.end = this.inlet;
+            this.connection.attached = true;
+        } else {
+            this.connection.start.node.removeConnection(this.connection);
+        }
+
+        this.dragState = DragState.IDLE;
+    }
+}
+
 class Node {
+    workspace: Workspace;
     cls: string;
     title: string;
     x: number;
@@ -9,7 +83,8 @@ class Node {
     height: number;
     properties: Array<Property>;
 
-    constructor(cls: string, title: string, x: number, y: number, width: number, height: number) {
+    constructor(workspace: Workspace, cls: string, title: string, x: number, y: number, width: number, height: number) {
+        this.workspace = workspace;
         this.cls = cls;
         this.title = title;
         this.x = x;
@@ -17,6 +92,32 @@ class Node {
         this.width = width;
         this.height = height;
         this.properties = [];
+    }
+
+    addProperty(text: string, color: string, hasInlet: boolean, hasOutlet: boolean): Property {
+        let property = new Property(this, this.properties.length, text, color, hasInlet, hasOutlet);
+        this.properties.push(property);
+        return property;
+    }
+
+    removeConnection(connection: Connection): void {
+        for (let prop of this.properties) {
+            let length = prop.outgoing.length;
+            for (let i = 0; i < length; i++) {
+                prop.outgoing = prop.outgoing.filter((c) => c !== connection);
+                if (prop.outgoing.length != length) {
+                    return;
+                }
+            }
+        }
+    }
+
+    get headerPath(): string {
+        return `M ${this.x},${this.y + 15} a 15 15 0 0 1 15,-15 h ${this.width - 30} a 15 15 0 0 1 15,15 v 15 h -${this.width} v -15`;
+    }
+
+    get headerClip(): string {
+    return `polygon(0px 0px, ${this.width - 30}px 0px, ${this.width - 30}px 30px, 0px 30px)`;
     }
 }
 
@@ -31,8 +132,9 @@ class Property {
     color: string;
     hasInlet: boolean;
     hasOutlet: boolean;
-    outgoing: Array<Property>;
-    incoming: Property;
+    outgoing: Array<Connection>;
+    incoming: Connection;
+    highlighted: boolean = false;
 
     constructor(node: Node, index: number, text: string, color: string, hasInlet: boolean, hasOutlet: boolean) {
         this.node = node;
@@ -43,6 +145,13 @@ class Property {
         this.hasOutlet = hasOutlet;
         this.outgoing = [];
         this.incoming = null;
+    }
+
+    connectTo(end: Property): Connection {
+        let connection = new Connection(this, end);
+        this.outgoing.push(connection);
+        end.incoming = connection;
+        return connection;
     }
 
     get inletX(): number {
@@ -73,312 +182,80 @@ class Property {
         return 'middle';
     }
 
-    connectionPath(end: Property): string {
-        let ox = this.outletX;
-        let oy = this.y;
-        let ix = end.inletX;
-        let iy = end.y;
-        let halfway = (this.outletX + end.inletX) / 2;
+    onMouseDown(event: MouseEvent, prop: Property): void {
+        // document.addEventListener('mousemove', (event) => this.onMouseMove(event));
+        prop.incoming.attached = false;
+        prop.incoming.x = 900;
+        prop.incoming.y = 900;
+    }
+
+    onMouseMove(event: MouseEvent): void {
+        // console.log(event.x, event.y);
+    }
+
+    onMouseEnter(event: MouseEvent, prop: Property): void {
+        console.log("Entered inlet", prop);
+    }
+}
+
+class Connection {
+    attached: boolean = true;
+    x: number = 0;
+    y: number = 0;
+    start: Property;
+    end: Property;
+
+    constructor(start: Property, end: Property) {
+        this.start = start;
+        this.end = end;
+    }
+
+    get startX() {
+        return this.start.outletX;
+    }
+
+    get startY() {
+        return this.start.y;
+    }
+
+    get endX() {
+        return this.attached ? this.end.inletX : this.x;
+    }
+
+    get endY() {
+        return this.attached ? this.end.y : this.y;
+    }
+
+    get path(): string {
+        let ox = this.startX;
+        let oy = this.startY;
+        let ix = this.endX;
+        let iy = this.endY;
+        let halfway = (ox + ix) / 2;
 
         return `M ${ox},${oy} C${halfway},${oy} ${halfway},${iy} ${ix},${iy}`
     }
 }
 
-let node1 = new Node('source', "Source",200, 50, 200, 200);
-let node2 = new Node('inventory', "Inventory", 800, 100, 200, 200);
-let node3 = new Node('filter', "Title case", 550, 150, 100, 100);
+let workspace = new Workspace();
 
-let node1prop1 = new Property(node1, 0, 'PID', '#d8e24a', false, true);
-let node1prop2 = new Property(node1, 1, 'PROD_NAME', '#d8e24a', false, true);
-let node2prop1 = new Property(node2, 0, 'id', '#d8e24a', true, false);
-let node2prop2 = new Property(node2, 1, 'name', '#d8e24a', true, false);
-let node3prop1 = new Property(node3, 0, 'Text', '#d8e24a', true, true);
+let node1 = workspace.addNode('source', "Source", 200, 50, 200, 200);
+let node2 = workspace.addNode('inventory', "Inventory", 800, 100, 200, 200);
+let node3 = workspace.addNode('filter', "Title case", 550, 150, 100, 100);
 
-node1.properties = [node1prop1, node1prop2];
-node2.properties = [node2prop1, node2prop2];
-node3.properties = [node3prop1];
+let node1prop1 = node1.addProperty('PID', '#d8e24a', false, true);
+let node1prop2 = node1.addProperty('PROD_NAME', '#d8e24a', false, true);
+let node2prop1 = node2.addProperty('id', '#d8e24a', true, false);
+let node2prop2 = node2.addProperty('name', '#d8e24a', true, false);
+let node3prop1 = node3.addProperty('Text', '#d8e24a', true, true);
 
-node1prop1.outgoing = [node2prop1];
-node2prop1.incoming = node1prop1;
+node1prop1.connectTo(node2prop1);
+node1prop2.connectTo(node3prop1);
+node3prop1.connectTo(node2prop2);
 
-node1prop2.outgoing = [node3prop1];
-node3prop1.incoming = node1prop2;
-
-node3prop1.outgoing = [node2prop2];
-node2prop2.incoming = node3prop1;
-
-var workspace = new Vue({
+new Vue({
     el: '#workspace',
     data: {
-        nodes: [node1, node2, node3]
-    },
-    methods: {
-        headerPath: (node) => {
-            return `M ${node.x},${node.y + 15} a 15 15 0 0 1 15,-15 h ${node.width - 30} a 15 15 0 0 1 15,15 v 15 h -${node.width} v -15`;
-        },
-        headerClip: (node) => {
-            return `polygon(0px 0px, ${node.width - 30}px 0px, ${node.width - 30}px 30px, 0px 30px)`;
-        },
+        workspace: workspace
     }
 });
-
-// class MercatorWorkspace {
-//     private root: HTMLElement;
-//
-//     constructor(rootId: string) {
-//         this.root = document.getElementById(rootId);
-//     }
-//
-//     addNode(node: MercatorNode): void {
-//         this.root.appendChild(node.root);
-//     }
-// }
-//
-// class MercatorProperty {
-//     text: string;
-//     color: string;
-//     hasInlet: boolean;
-//     hasOutlet: boolean;
-//
-//     constructor(text, color, hasInlet, hasOutlet) {
-//         this.text = text;
-//         this.color = color;
-//         this.hasInlet = hasInlet;
-//         this.hasOutlet = hasOutlet;
-//     }
-// }
-//
-// class MercatorNode {
-//     static readonly namespace = 'http://www.w3.org/2000/svg';
-//
-//     root;
-//
-//     private x: number;
-//     private y: number;
-//     private width: number;
-//     private height: number;
-//     private properties: Array<MercatorProperty>;
-//     private propsGroup;
-//
-//     constructor(nodeClass: string, title: string, x: number, y: number, width: number, height: number, properties: Array<MercatorProperty>) {
-//         this.x = x;
-//         this.y = y;
-//         this.width = width;
-//         this.height = height;
-//         this.properties = properties;
-//
-//         this.root = this.createNode(title, nodeClass);
-//         this.positionNode(this.x, this.y, this.width, this.height);
-//     }
-//
-//     private createNode(title, nodeClass) {
-//         // Group for entire node
-//         let root = this.createElement('g', {'class': `node ${nodeClass}`});
-//
-//         // Background
-//         let background = this.createElement('rect', {'class': 'node-bg', 'rx': 15, 'ry': 15});
-//         root.appendChild(background);
-//
-//         // Title background
-//         let header = this.createElement('path', {'class': `node-header`});
-//         root.appendChild(header);
-//
-//         // Title text
-//         let titleText = this.createElement('text', {'class': 'node-title'});
-//         titleText.textContent = title;
-//         root.appendChild(titleText);
-//
-//         // Node outline
-//         let outline = this.createElement('rect', {'class': 'node-outline', 'rx': 15, 'ry': 15});
-//         root.appendChild(outline);
-//
-//         this.propsGroup = this.createPropsGroup();
-//         root.appendChild(this.propsGroup);
-//
-//         console.log("Node root is:", root);
-//         return root;
-//     }
-//
-//     positionNode(x: number, y: number, width: number, height: number): void {
-//         this.x = x;
-//         this.y = y;
-//         this.width = width;
-//         this.height = height;
-//
-//         let background = this.root.querySelector('.node-bg');
-//         background.setAttribute('x', x.toString());
-//         background.setAttribute('y', y.toString());
-//         background.setAttribute('width', width.toString());
-//         background.setAttribute('height', height.toString());
-//
-//         let header = this.root.querySelector('.node-header');
-//         header.setAttribute('d', `M ${x},${y + 15} a 15 15 0 0 1 15,-15 h ${width - 30} a 15 15 0 0 1 15,15 v 15 h -${width} v -15`);
-//
-//         let titleText = this.root.querySelector('.node-title');
-//         titleText.setAttribute('x', (x + 15).toString());
-//         titleText.setAttribute('y', (y + 20).toString());
-//         titleText.setAttribute('clip-path', `polygon(0px 0px, ${width - 30}px 0px, ${width - 30}px 30px, 0px 30px)`);
-//
-//         let outline = this.root.querySelector('.node-outline');
-//         outline.setAttribute('x', x.toString());
-//         outline.setAttribute('y', y.toString());
-//         outline.setAttribute('width', width.toString());
-//         outline.setAttribute('height', height.toString());
-//
-//         let propGroups = this.propsGroup.querySelectorAll('g');
-//         console.log("propGroups", propGroups);
-//
-//         for (let i = 0; i < this.properties.length; i++) {
-//             let property = this.properties[i];
-//
-//             if (property.hasInlet) {
-//                 let cy = y + 60 + (i * 30);
-//                 let circle = propGroups[i].querySelector('.node-inlet');
-//                 circle.setAttribute('cx', x.toString());
-//                 circle.setAttribute('cy', cy.toString());
-//             }
-//
-//             if (property.hasOutlet) {
-//                 let circle = propGroups[i].querySelector('.node-outlet');
-//                 let cx = x + width;
-//                 let cy = y + 60 + (i * 30);
-//                 circle.setAttribute('cx', cx.toString());
-//                 circle.setAttribute('cy', cy.toString());
-//             }
-//
-//             let textX;
-//             if (property.hasInlet && !property.hasOutlet) {
-//                 textX = x + 15;
-//             } else if (property.hasOutlet && !property.hasInlet) {
-//                 textX = x + width - 15;
-//             } else {
-//                 textX = (x + x + width) / 2;
-//             }
-//
-//             let textY = y + 60 + (i * 30) + 5;
-//
-//             let text = propGroups[i].querySelector('.property-text');
-//             text.setAttribute('x', textX.toString());
-//             text.setAttribute('y', textY.toString());
-//         }
-//     }
-//
-//     private createPropsGroup() {
-//         let group = this.createElement('g', {'class': 'node-properties'});
-//
-//         for (let i = 0; i < this.properties.length; i++) {
-//             let propGroup = this.createElement('g', {'class': 'node-property'});
-//
-//             let property = this.properties[i];
-//
-//             if (property.hasInlet) {
-//                 let propCircle = this.createElement('circle', {
-//                     'class': 'node-inlet',
-//                     'r': 5,
-//                     'fill': property.color
-//                 });
-//                 propGroup.appendChild(propCircle);
-//             }
-//
-//             if (property.hasOutlet) {
-//                 let propCircle = this.createElement('circle', {
-//                     'class': 'node-outlet',
-//                     'r': 5,
-//                     'fill': property.color
-//                 });
-//                 propGroup.appendChild(propCircle);
-//             }
-//
-//             let anchor: string;
-//             if (property.hasInlet && !property.hasOutlet) {
-//                 anchor = 'start';
-//             } else if (property.hasOutlet && !property.hasInlet) {
-//                 anchor = 'end';
-//             } else {
-//                 anchor = 'middle';
-//             }
-//
-//             let propText = this.createElement('text', {
-//                 'class': 'property-text',
-//                 'text-anchor': anchor
-//             });
-//             propText.textContent = property.text;
-//             propGroup.appendChild(propText);
-//
-//             group.appendChild(propGroup);
-//         }
-//
-//         return group;
-//     }
-//
-//     private createElement(name, attributes) {
-//         let element = document.createElementNS(MercatorNode.namespace, name);
-//
-//         Object.keys(attributes).forEach(key => {
-//             element.setAttribute(key, attributes[key]);
-//         });
-//
-//         return element;
-//     }
-// }
-//
-// let workspace = new MercatorWorkspace('workspace');
-//
-// workspace.addNode(
-//     new MercatorNode('source', "Source", 200, 50, 200, 200, [
-//         new MercatorProperty('PID', '#d8e24a', false, true),
-//         new MercatorProperty('PROD_NAME', '#d8e24a', false, true)
-//     ])
-// );
-//
-// workspace.addNode(
-//     new MercatorNode('inventory', "Inventory", 800, 100, 200, 200, [
-//         new MercatorProperty('id', '#d8e24a', true, false),
-//         new MercatorProperty('name', '#d8e24a', true, false)
-//     ])
-// );
-//
-// workspace.addNode(
-//     new MercatorNode('filter', "Title case", 550, 150, 100, 100, [
-//         new MercatorProperty('Text', '#d8e24a', true, true)
-//     ])
-// );
-
-// function createConnection(ox, oy, ix, iy) {
-//     let halfway = (ix + ox) / 2;
-//     return createElement('path', {
-//         'class': 'connector',
-//         'd': `M ${ox},${oy} C${halfway},${oy} ${halfway},${iy} ${ix},${iy} `
-//     });
-// }
-//
-// let nodeX;
-// let nodeY;
-// let dragOffsetX;
-// let dragOffsetY;
-//
-// let conn1 = createConnection(400, 110, 800, 160);
-// let conn2 = createConnection(400, 140, 550, 210);
-// let conn3 = createConnection(650, 210, 800, 190);
-// workspace.appendChild(conn1);
-// workspace.appendChild(conn2);
-// workspace.appendChild(conn3);
-//
-// node1.onmousedown = function (event) {
-//     let bounds = node1.getBoundingClientRect();
-//     dragOffsetX = event.x - nodeX;
-//     dragOffsetY = event.y - nodeY;
-//     workspace.addEventListener('mousemove', onMouseMove);
-//     return false;
-// };
-//
-// workspace.onmouseup = function (event) {
-//     workspace.removeEventListener('mousemove', onMouseMove);
-//     return false;
-// };
-//
-//
-// function onMouseMove(event) {
-//     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
-//     return false;
-// }
