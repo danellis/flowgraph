@@ -14,10 +14,6 @@ let node2prop1 = node2.addProperty('id', '#d8e24a', true, false);
 let node2prop2 = node2.addProperty('name', '#d8e24a', true, false);
 let node3prop1 = node3.addProperty('Text', '#d8e24a', true, true);
 
-node1prop1.connectTo(node2prop1);
-node1prop2.connectTo(node3prop1);
-node3prop1.connectTo(node2prop2);
-
 new Vue({
     el: '#workspace',
     data: {
