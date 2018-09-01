@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Workspace from './Workspace';
 
 let workspace = new Workspace();
-window['workspace'] = workspace;
 
 let node1 = workspace.addNode('source', "Source", 200, 50, 200, 200);
 let node2 = workspace.addNode('inventory', "Inventory", 800, 100, 200, 200);
