@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/nodes.css">
+  </head>
+  <body>
+  <svg id="workspace" width="500" height="500">
+    <g v-for="node in workspace.nodes">
+      <g v-for="start in node.properties">
+        <path v-for="connection in start.outgoing" class="node-connector" :d="connection.path"></path>
+      </g>
+    </g>
+    <g v-for="node in workspace.nodes" :class="'node ' + node.cls">
+      <rect class="node-bg" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
+      <path class="node-header" @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)" :d="node.headerPath"></path>
+      <text class="node-title" @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)" :x="node.x + 15" :y="node.y + 20" :clip-path="node.headerClip">{{node.title}}</text>
+      <rect class="node-outline" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
+      <g v-for="prop in node.properties">
+        <circle
+          v-if="prop.hasInlet"
+          @mousedown.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
+          @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
+          @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
+          :class="{'node-inlet': true, 'highlighted': prop.highlighted}"
+          r="5" :cx="prop.inletX" :cy="prop.y"
+        ></circle>
+
+        <circle
+          v-if="prop.hasOutlet"
+          @mousedown.prevent="workspace.dragController.onMouseDownOutlet($el, $event, prop)"
+          class="node-outlet"
+          r="5"
+          :cx="prop.outletX"
+          :cy="prop.y"
+        ></circle>
+
+        <text class="property-text" :x="prop.textX" :y="prop.textY" :text-anchor="prop.anchor">{{prop.text}}</text>
+      </g>
+    </g>
+  </svg>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="./assets/bundle.js"></script>
+  </body>
+</html>
