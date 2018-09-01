@@ -1,62 +1,111 @@
 import Property from './Property';
 import Connection from './Connection';
+import Node from './Node';
 
 enum DragState {
-    IDLE, SENSING, DRAGGING_INLET, DRAGGING_OUTLET
+    IDLE, DRAGGING_CONNECTION, DRAGGING_NODE
 }
-
-//     dragOffsetX = event.x - nodeX;
-//     dragOffsetY = event.y - nodeY;
-//     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
 
 export class DragController {
     moveListener = (event) => this.onMouseMove(event);
     upListener = (event) => this.onMouseUp(event);
 
     state: DragState = DragState.IDLE;
+
     connection: Connection = null;
     inlet: Property = null;
 
+    node: Node = null;
+    offsetX: number = 0;
+    offsetY: number = 0;
 
-    onMouseDownInlet(event: MouseEvent, prop: Property): void {
-        this.state = DragState.DRAGGING_INLET;
+
+    onMouseDownInlet(svg: SVGElement, event: MouseEvent, prop: Property): void {
+        this.state = DragState.DRAGGING_CONNECTION;
         this.connection = prop.incoming;
         this.connection.attached = false;
         this.connection.x = event.x;
         this.connection.y = event.y;
+
+        let bounds = svg.getBoundingClientRect();
+        this.offsetX = bounds.left;
+        this.offsetY = bounds.top;
+
         document.addEventListener('mousemove', this.moveListener);
         document.addEventListener('mouseup', this.upListener);
     }
 
-    onMouseDownOutlet(event: MouseEvent, prop: Property): void {
-        this.state = DragState.DRAGGING_OUTLET;
+    onMouseDownOutlet(svg: SVGElement, event: MouseEvent, prop: Property): void {
+        this.state = DragState.DRAGGING_CONNECTION;
         this.connection = prop.connectTo(null);
         this.connection.x = event.x;
         this.connection.y = event.y;
+
+        let bounds = svg.getBoundingClientRect();
+        this.offsetX = bounds.left;
+        this.offsetY = bounds.top;
+
         document.addEventListener('mousemove', this.moveListener);
         document.addEventListener('mouseup', this.upListener);
     }
 
+    onMouseDownNode(event: MouseEvent, node: Node): void {
+        this.state = DragState.DRAGGING_NODE;
+        this.node = node;
+        this.offsetX = event.x - node.x;
+        this.offsetY = event.y - node.y;
+//     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
+        document.addEventListener('mousemove', this.moveListener);
+        document.addEventListener('mouseup', this.upListener);
+
+    }
+
     onMouseMove(event: MouseEvent): void {
-        this.connection.x = event.x - 8;
-        this.connection.y = event.y - 8;
+        switch (this.state) {
+            case DragState.DRAGGING_CONNECTION:
+                this.connection.x = event.x - this.offsetX;
+                this.connection.y = event.y - this.offsetY;
+                break;
+
+            case DragState.DRAGGING_NODE:
+                this.node.x = event.x - this.offsetX;
+                this.node.y = event.y - this.offsetY;
+                break;
+        }
     }
 
     onMouseEnterInlet(prop: Property): void {
-        if (this.state == DragState.DRAGGING_INLET || this.state == DragState.DRAGGING_OUTLET) {
+        if (this.state == DragState.DRAGGING_CONNECTION) {
             prop.highlighted = true;
             this.inlet = prop;
         }
     }
 
     onMouseLeaveInlet(prop: Property): void {
-        if (this.state == DragState.DRAGGING_INLET || this.state == DragState.DRAGGING_OUTLET) {
+        if (this.state == DragState.DRAGGING_CONNECTION) {
             prop.highlighted = false;
             this.inlet = null;
         }
     }
 
-    onMouseUp(event: MouseEvent): void {
+    onMouseUp(event: MouseEvent) {
+        switch (this.state) {
+            case DragState.DRAGGING_CONNECTION:
+                this.onMouseUpConnection(event);
+                break;
+
+            case DragState.DRAGGING_NODE:
+                this.onMouseUpNode(event);
+                break;
+        }
+
+        document.removeEventListener('mousemove', this.moveListener);
+        document.removeEventListener('mouseup', this.upListener);
+
+        this.state = DragState.IDLE;
+    }
+
+    onMouseUpConnection(event: MouseEvent): void {
         if (this.inlet) {
             // Button released over an inlet
             if (this.inlet.incoming) {
@@ -88,11 +137,10 @@ export class DragController {
 
             this.connection.start.node.removeConnection(this.connection);
         }
+    }
 
-        document.removeEventListener('mousemove', this.moveListener);
-        document.removeEventListener('mouseup', this.upListener);
-
-        this.state = DragState.IDLE;
+    onMouseUpNode(event: MouseEvent) {
+        this.node = null;
     }
 }
 
