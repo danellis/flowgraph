@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4';
 import Node from './Node';
 import Connection from './Connection';
 
@@ -6,25 +7,25 @@ export class Property {
     static readonly textOffset = 5;
     static readonly spacing = 20;
 
+    id: string;
     node: Node;
     index: number;
     text: string;
     color: string;
     hasInlet: boolean;
     hasOutlet: boolean;
-    outgoing: Array<Connection>;
-    incoming: Connection;
+    outgoing: Array<Connection> = [];
+    incoming: Connection = null;
     highlighted: boolean = false;
 
     constructor(node: Node, index: number, text: string, color: string, hasInlet: boolean, hasOutlet: boolean) {
+        this.id = uuid();
         this.node = node;
         this.index = index;
         this.text = text;
         this.color = color;
         this.hasInlet = hasInlet;
         this.hasOutlet = hasOutlet;
-        this.outgoing = [];
-        this.incoming = null;
     }
 
     connectTo(end: Property): Connection {
@@ -64,6 +65,18 @@ export class Property {
         if (this.hasInlet && !this.hasOutlet) return 'start';
         if (this.hasOutlet && !this.hasInlet) return 'end';
         return 'middle';
+    }
+
+    export(): object {
+        return {
+            id: this.id,
+            text: this.text,
+            color: this.color,
+            hasInlet: this.hasInlet,
+            hasOutlet: this.hasOutlet,
+            outgoing: this.outgoing.map((connection) => connection.export()),
+            incoming: this.incoming ? this.incoming.export() : null
+        };
     }
 }
 

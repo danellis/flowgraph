@@ -46,6 +46,13 @@ export class Connection {
 
         return `M ${ox},${oy} C${halfway},${oy} ${halfway},${iy} ${ix},${iy}`
     }
+
+    export(): object {
+        return {
+            start: this.start.id,
+            end: this.end.id
+        }
+    }
 }
 
 export default Connection;

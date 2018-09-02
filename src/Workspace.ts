@@ -10,6 +10,12 @@ export class Workspace {
         this.nodes.push(node);
         return node;
     }
+
+    export(): object {
+        return {
+            nodes: this.nodes.map((node) => node.export())
+        };
+    }
 }
 
 export default Workspace;

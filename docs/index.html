@@ -32,11 +32,10 @@
 
       <rect class="node-outline" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
 
-      <g v-for="prop in node.properties">
+      <g v-if="!node.collapsed" v-for="prop in node.properties">
         <circle
           v-if="prop.hasInlet"
           @mousedown.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
-          @touchstart.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
           @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
           @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
           :class="{'node-inlet': true, 'highlighted': prop.highlighted}"

@@ -1,8 +1,10 @@
+import uuid from 'uuid/v4';
 import Workspace from './Workspace';
 import Property from './Property';
 import Connection from './Connection';
 
 export class Node {
+    id: string;
     workspace: Workspace;
     cls: string;
     title: string;
@@ -13,6 +15,7 @@ export class Node {
     properties: Array<Property>;
 
     constructor(workspace: Workspace, cls: string, title: string, x: number, y: number, width: number, height: number) {
+        this.id = uuid();
         this.workspace = workspace;
         this.cls = cls;
         this.title = title;
@@ -50,6 +53,19 @@ export class Node {
 
     get headerClip(): string {
         return `polygon(0px 0px, ${this.width - 30}px 0px, ${this.width - 30}px 30px, 0px 30px)`;
+    }
+
+    export(): object {
+        return {
+            id: this.id,
+            'class': this.cls,
+            title: this.title,
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            collapsed: this.collapsed,
+            properties: this.properties.map((property) => property.export())
+        };
     }
 }
 
