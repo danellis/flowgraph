@@ -132,6 +132,9 @@ export class DragController {
 
             this.connection.end.incoming = this.connection;
             this.connection.attached = true;
+
+            // Clear inlet ready for next drag
+            this.inlet = null;
         } else {
             // Button released somewhere else
             if (this.connection.end) {
