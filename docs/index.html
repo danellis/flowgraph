@@ -38,7 +38,7 @@
           @mousedown.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
           @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
           @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
-          :class="{'node-inlet': true, 'highlighted': prop.highlighted}"
+          :class="{'node-inlet': true, highlighted: prop.highlighted, attached: prop.incoming}"
           r="5" :cx="prop.inletX" :cy="prop.y"
         ></circle>
 

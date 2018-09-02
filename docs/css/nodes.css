@@ -16,6 +16,10 @@ svg {
     fill: #202020;
 }
 
+.node-header {
+    cursor: move;
+}
+
 .node.source .node-header {
     fill: #4a80d6;
     stroke: none;
@@ -40,6 +44,7 @@ svg {
 .node-title {
     font-family: sans-serif;
     fill: #ddd;
+    cursor: move;
 }
 
 .node-outlet-pid {
@@ -52,6 +57,10 @@ svg {
     stroke: #333;
 }
 
+.node-inlet.attached {
+    cursor: pointer;
+}
+
 .node-inlet.highlighted {
     stroke: #fff;
 }
@@ -59,6 +68,7 @@ svg {
 .node-outlet {
     fill: #d8e24a;
     stroke: #333;
+    cursor: pointer;
 }
 
 .property-text {
