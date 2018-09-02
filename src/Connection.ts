@@ -39,9 +39,9 @@ export class Connection {
 
     get path(): string {
         let ox = this.startX;
-        let oy = this.startY;
+        let oy = this.start.node.collapsed ? this.start.node.y + 18 : this.startY;
         let ix = this.endX;
-        let iy = this.endY;
+        let iy = (this.end && this.end.node.collapsed) ? this.end.node.y + 18 : this.endY;
         let halfway = (ox + ix) / 2;
 
         return `M ${ox},${oy} C${halfway},${oy} ${halfway},${iy} ${ix},${iy}`

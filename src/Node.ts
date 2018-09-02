@@ -9,6 +9,7 @@ export class Node {
     x: number;
     y: number;
     width: number;
+    collapsed: boolean = false;
     properties: Array<Property>;
 
     constructor(workspace: Workspace, cls: string, title: string, x: number, y: number, width: number, height: number) {
@@ -40,7 +41,7 @@ export class Node {
     }
 
     get height(): number {
-        return this.properties.length * Property.spacing + Property.offset;
+        return this.collapsed ? 45 : this.properties.length * Property.spacing + Property.offset;
     }
 
     get headerPath(): string {

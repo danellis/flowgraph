@@ -56,6 +56,7 @@ export class DragController {
         this.offsetY = event.y - node.y;
 //     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
         document.addEventListener('mousemove', this.moveListener);
+        document.addEventListener('touchmove', this.moveListener);
         document.addEventListener('mouseup', this.upListener);
 
     }
@@ -72,6 +73,8 @@ export class DragController {
                 this.node.y = event.y - this.offsetY;
                 break;
         }
+
+        event.preventDefault();
     }
 
     onMouseEnterInlet(prop: Property): void {

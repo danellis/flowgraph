@@ -13,13 +13,30 @@
     </g>
     <g v-for="node in workspace.nodes" :class="'node ' + node.cls">
       <rect class="node-bg" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
-      <path class="node-header" @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)" :d="node.headerPath"></path>
-      <text class="node-title" @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)" :x="node.x + 15" :y="node.y + 20" :clip-path="node.headerClip">{{node.title}}</text>
+
+      <path
+        class="node-header"
+        @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)"
+        @dblclick.prevent="node.collapsed = !node.collapsed"
+        :d="node.headerPath"
+      ></path>
+
+      <text
+        class="node-title"
+        @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)"
+        @dblclick.prevent="node.collapsed = !node.collapsed"
+        :x="node.x + 15"
+        :y="node.y + 20"
+        :clip-path="node.headerClip"
+      >{{node.title}}</text>
+
       <rect class="node-outline" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
+
       <g v-for="prop in node.properties">
         <circle
           v-if="prop.hasInlet"
           @mousedown.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
+          @touchstart.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
           @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
           @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
           :class="{'node-inlet': true, 'highlighted': prop.highlighted}"
