@@ -4,12 +4,17 @@ export class Connection {
     attached: boolean;
     x: number = 0;
     y: number = 0;
-    start: Property;
-    end: Property;
 
-    constructor(start: Property, end: Property) {
+    start: Property;
+    startIndex: number;
+
+    end: Property;
+    endIndex: number;
+
+    constructor(start: Property, index: number, end: Property) {
         this.attached = end !== null;
         this.start = start;
+        this.startIndex = index;
         this.end = end;
     }
 
@@ -33,18 +38,18 @@ export class Connection {
         return this.attached ? this.end.inletX : this.x;
     }
 
-    get endY() {
-        return this.attached ? this.end.y : this.y;
+    endY(index) {
+        return this.attached ? this.end.y(index) : this.y;
     }
 
     get path(): string {
         let ox = this.startX;
-        let oy = this.start.node.collapsed ? this.start.node.y + 18 : this.startY;
+        let oy = this.start.node.collapsed ? this.start.node.y + 18 : this.start.y(this.startIndex);
         let ix = this.endX;
-        let iy = (this.end && this.end.node.collapsed) ? this.end.node.y + 18 : this.endY;
+        let iy = (this.end && this.end.node.collapsed) ? this.end.node.y + 18 : this.endY(this.endIndex);
         let halfway = (ox + ix) / 2;
 
-        return `M ${ox},${oy} C${halfway},${oy} ${halfway},${iy} ${ix},${iy}`
+        return `M ${ox},${oy} C ${halfway},${oy} ${halfway},${iy} ${ix},${iy}`
     }
 
     export(): object {

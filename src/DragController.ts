@@ -14,6 +14,7 @@ export class DragController {
 
     connection: Connection = null;
     inlet: Property = null;
+    inletIndex: number;
 
     node: Node = null;
     offsetX: number = 0;
@@ -35,9 +36,9 @@ export class DragController {
         document.addEventListener('mouseup', this.upListener);
     }
 
-    onMouseDownOutlet(svg: SVGElement, event: MouseEvent, prop: Property): void {
+    onMouseDownOutlet(svg: SVGElement, event: MouseEvent, prop: Property, index: number): void {
         this.state = DragState.DRAGGING_CONNECTION;
-        this.connection = prop.connectTo(null);
+        this.connection = prop.connectTo(index, null);
         this.connection.x = event.x;
         this.connection.y = event.y;
 
@@ -54,7 +55,7 @@ export class DragController {
         this.node = node;
         this.offsetX = event.x - node.x;
         this.offsetY = event.y - node.y;
-//     positionNode(node1, event.x - dragOffsetX, event.y - dragOffsetY, 300, 200);
+
         document.addEventListener('mousemove', this.moveListener);
         document.addEventListener('touchmove', this.moveListener);
         document.addEventListener('mouseup', this.upListener);
@@ -77,10 +78,11 @@ export class DragController {
         event.preventDefault();
     }
 
-    onMouseEnterInlet(prop: Property): void {
+    onMouseEnterInlet(prop: Property, index: number): void {
         if (this.state == DragState.DRAGGING_CONNECTION) {
             prop.highlighted = true;
             this.inlet = prop;
+            this.inletIndex = index;
         }
     }
 
@@ -129,6 +131,7 @@ export class DragController {
 
             // Set the end point of the connection we're dragging to this inlet
             this.connection.end = this.inlet;
+            this.connection.endIndex = this.inletIndex;
 
             this.connection.end.incoming = this.connection;
             this.connection.attached = true;

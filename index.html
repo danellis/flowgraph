@@ -32,26 +32,26 @@
 
       <rect class="node-outline" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
 
-      <g v-if="!node.collapsed" v-for="prop in node.properties">
+      <g v-if="!node.collapsed" v-for="(prop, index) in node.properties">
         <circle
           v-if="prop.hasInlet"
           @mousedown.prevent="workspace.dragController.onMouseDownInlet($el, $event, prop)"
-          @mouseenter="workspace.dragController.onMouseEnterInlet(prop)"
+          @mouseenter="workspace.dragController.onMouseEnterInlet(prop, index)"
           @mouseleave="workspace.dragController.onMouseLeaveInlet(prop)"
           :class="{'node-inlet': true, highlighted: prop.highlighted, attached: prop.incoming}"
-          r="5" :cx="prop.inletX" :cy="prop.y"
+          r="5" :cx="prop.inletX" :cy="prop.y(index)"
         ></circle>
 
         <circle
           v-if="prop.hasOutlet"
-          @mousedown.prevent="workspace.dragController.onMouseDownOutlet($el, $event, prop)"
+          @mousedown.prevent="workspace.dragController.onMouseDownOutlet($el, $event, prop, index)"
           class="node-outlet"
           r="5"
           :cx="prop.outletX"
-          :cy="prop.y"
+          :cy="prop.y(index)"
         ></circle>
 
-        <text class="property-text" :x="prop.textX" :y="prop.textY" :text-anchor="prop.anchor">{{prop.text}}</text>
+        <text class="property-text" :x="prop.textX" :y="prop.textY(index)" :text-anchor="prop.anchor">{{prop.text}}</text>
       </g>
     </g>
   </svg>

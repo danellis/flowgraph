@@ -9,7 +9,6 @@ export class Property {
 
     id: string;
     node: Node;
-    index: number;
     text: string;
     color: string;
     hasInlet: boolean;
@@ -18,18 +17,17 @@ export class Property {
     incoming: Connection = null;
     highlighted: boolean = false;
 
-    constructor(node: Node, index: number, text: string, color: string, hasInlet: boolean, hasOutlet: boolean) {
+    constructor(node: Node, text: string, color: string, hasInlet: boolean, hasOutlet: boolean) {
         this.id = uuid();
         this.node = node;
-        this.index = index;
         this.text = text;
         this.color = color;
         this.hasInlet = hasInlet;
         this.hasOutlet = hasOutlet;
     }
 
-    connectTo(end: Property): Connection {
-        let connection = new Connection(this, end);
+    connectTo(index: number, end: Property): Connection {
+        let connection = new Connection(this, index, end);
         this.outgoing.push(connection);
 
         if (end) {
@@ -47,8 +45,8 @@ export class Property {
         return this.node.x + this.node.width;
     }
 
-    get y(): number {
-        return this.node.y + Property.offset + (this.index * Property.spacing);
+    y(index: number): number {
+        return this.node.y + Property.offset + (index * Property.spacing);
     }
 
     get textX() {
@@ -57,8 +55,8 @@ export class Property {
         return ((this.node.x * 2) + this.node.width) / 2;
     }
 
-    get textY() {
-        return this.y + Property.textOffset;
+    textY(index: number) {
+        return this.y(index) + Property.textOffset;
     }
 
     get anchor() {

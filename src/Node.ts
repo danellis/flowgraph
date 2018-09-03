@@ -26,7 +26,7 @@ export class Node {
     }
 
     addProperty(text: string, color: string, hasInlet: boolean, hasOutlet: boolean): Property {
-        let property = new Property(this, this.properties.length, text, color, hasInlet, hasOutlet);
+        let property = new Property(this, text, color, hasInlet, hasOutlet);
         this.properties.push(property);
         return property;
     }
