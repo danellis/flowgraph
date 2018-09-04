@@ -7,6 +7,7 @@ window['workspace'] = workspace;
 let node1 = workspace.addNode('source', "Source", 200, 50, 200, 200);
 let node2 = workspace.addNode('inventory', "Inventory", 800, 100, 200, 200);
 let node3 = workspace.addNode('filter', "Title case", 550, 150, 100, 100);
+let node4 = workspace.addNode('filter', "Build ID", 550, 50, 100, 100);
 
 let node1prop1 = node1.addProperty("Handset Brand", '#d8e24a', false, true);
 let node1prop2 = node1.addProperty("Handset Title", '#d8e24a', false, true);
@@ -33,6 +34,8 @@ let node2prop1 = node2.addProperty('id', '#d8e24a', true, false);
 let node2prop2 = node2.addProperty('name', '#d8e24a', true, false);
 
 let node3prop1 = node3.addProperty('Text', '#d8e24a', true, true);
+
+let node4prop1 = node4.addProperty('Text', '#d8e24a', true, true);
 
 new Vue({
     el: '#workspace',
