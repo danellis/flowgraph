@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Slab');
+@import url('https://fonts.googleapis.com/css?family=Oswald:300');
+
 body {
     background-color: #333;
     background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
@@ -43,7 +46,9 @@ svg {
 }
 
 .node-title {
-    font-family: sans-serif;
+    font-size: 15px;
+    font-family: 'Roboto Slab', sans-serif;
+    text-shadow: #333 2px 2px 2px;
     fill: #ddd;
     cursor: move;
 }
@@ -73,9 +78,9 @@ svg {
 }
 
 .property-text {
-    font-family: sans-serif;
+    font-family: 'Oswald', sans-serif;
     fill: #fff;
-    font-size: 12px;
+    font-size: 15px;
 }
 
 .node-connector {
