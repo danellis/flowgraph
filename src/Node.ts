@@ -44,7 +44,7 @@ export class Node {
     }
 
     get height(): number {
-        return this.collapsed ? 45 : this.properties.length * Property.spacing + Property.offset;
+        return this.collapsed ? 30 : this.properties.length * Property.spacing + Property.offset;
     }
 
     get headerPath(): string {

@@ -3,9 +3,9 @@ import Node from './Node';
 import Connection from './Connection';
 
 export class Property {
-    static readonly offset = 45;
+    static readonly offset = 55;
     static readonly textOffset = 5;
-    static readonly spacing = 20;
+    static readonly spacing = 30;
 
     id: string;
     node: Node;

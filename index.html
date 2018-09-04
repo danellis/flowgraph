@@ -14,7 +14,16 @@
     <g v-for="node in workspace.nodes" :class="'node ' + node.cls">
       <rect class="node-bg" rx="15" ry="15" :x="node.x" :y="node.y" :width="node.width" :height="node.height"></rect>
 
-      <path
+      <rect v-if="node.collapsed"
+        class="node-header"
+        @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)"
+        @dblclick.prevent="node.collapsed = !node.collapsed"
+        rx=15 ry=15
+        :x="node.x" :y="node.y"
+        :width="node.width" height=30
+      ></rect>
+      
+      <path v-if="!node.collapsed"
         class="node-header"
         @mousedown.prevent="workspace.dragController.onMouseDownNode($event, node)"
         @dblclick.prevent="node.collapsed = !node.collapsed"
