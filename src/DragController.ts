@@ -38,13 +38,14 @@ export class DragController {
 
     onMouseDownOutlet(svg: SVGElement, event: MouseEvent, prop: Property, index: number): void {
         this.state = DragState.DRAGGING_CONNECTION;
-        this.connection = prop.connectTo(index, null);
-        this.connection.x = event.x;
-        this.connection.y = event.y;
 
         let bounds = svg.getBoundingClientRect();
         this.offsetX = bounds.left;
         this.offsetY = bounds.top;
+
+        this.connection = prop.connectTo(index, null);
+        this.connection.x = event.x - this.offsetX;
+        this.connection.y = event.y - this.offsetY;
 
         document.addEventListener('mousemove', this.moveListener);
         document.addEventListener('mouseup', this.upListener);
